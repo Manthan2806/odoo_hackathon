@@ -1,23 +1,33 @@
-// src/services/assetService.ts
-import prisma from '../config/db';
-// MOCK: Import your teammate's audit logger
-// import { logAudit } from '../utils/auditLogger'; 
+import { prisma } from '../config/prisma';
+import { logAudit } from '../utils/auditLogger';
+import { CreateAssetInput } from '../validators';
+import { AppError } from '../utils/AppError';
 
-export const createAsset = async (data: any, userId: string) => {
-  const asset = await prisma.asset.create({
-    data,
+export async function createAsset(data: CreateAssetInput, userId?: string) {
+  const category = await prisma.assetCategory.findUnique({ where: { id: data.categoryId } });
+  if (!category) throw AppError.notFound('Category not found');
+
+  const asset = await prisma.asset.create({ data });
+  await logAudit({
+    entityType: 'Asset',
+    entityId: asset.id,
+    action: 'CREATE',
+    changes: { assetTag: asset.assetTag, name: asset.name, categoryId: asset.categoryId },
+    performedById: userId,
   });
-
-  // Call the shared audit log
-  // await logAudit(userId, 'ASSET_CREATED', { assetId: asset.id, changes: data });
-
   return asset;
-};
+}
 
-export const getAllAssets = async () => {
-  return await prisma.asset.findMany({
+export function getAllAssets() {
+  return prisma.asset.findMany({
     include: {
-      category: true, // Joins the category data automatically
-    }
+      category: true,
+      allocations: {
+        where: { status: 'ACTIVE' },
+        take: 1,
+        include: { employee: { include: { department: true } } },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
   });
-};
+}

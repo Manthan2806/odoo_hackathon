@@ -28,7 +28,7 @@ function signToken(employee: { id: string; role: Role }) {
   return jwt.sign(
     { id: employee.id, employeeId: employee.id, role: employee.role },
     env.jwtSecret,
-    { expiresIn: env.jwtExpiresIn }
+    { expiresIn: env.jwtExpiresIn as jwt.SignOptions['expiresIn'] }
   );
 }
 
