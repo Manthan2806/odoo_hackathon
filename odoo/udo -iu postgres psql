@@ -1,0 +1,28 @@
+[0;1;32m●[0m postgresql.service - PostgreSQL database server
+     Loaded: loaded (]8;;file://archdhruv001/usr/lib/systemd/system/postgresql.service\/usr/lib/systemd/system/postgresql.service]8;;\; [0;1;32menabled[0m; preset: [0;1;38:5:185mdisabled[0m)
+     Active: [0;1;32mactive (running)[0m since Sun 2026-07-12 10:11:36 IST; 19s ago
+ Invocation: 255793743b9a4d8997ed97314ab970a7
+       Docs: ]8;;man:postgres(1)\man:postgres(1)]8;;\
+   Main PID: 22518 (postgres)
+      Tasks: 9[0;38:5:245m (limit: 28407)[0m
+     Memory: 21.9M (peak: 22.9M)
+        CPU: 165ms
+     CGroup: /system.slice/postgresql.service
+             ├─[0;38:5:245m22518 /usr/bin/postgres -D /var/lib/postgres/data[0m
+             ├─[0;38:5:245m22521 "postgres: io worker 0"[0m
+             ├─[0;38:5:245m22522 "postgres: io worker 1"[0m
+             ├─[0;38:5:245m22523 "postgres: io worker 2"[0m
+             ├─[0;38:5:245m22524 "postgres: checkpointer "[0m
+             ├─[0;38:5:245m22525 "postgres: background writer "[0m
+             ├─[0;38:5:245m22527 "postgres: walwriter "[0m
+             ├─[0;38:5:245m22528 "postgres: autovacuum launcher "[0m
+             └─[0;38:5:245m22529 "postgres: logical replication launcher "[0m
+
+Jul 12 10:11:36 archdhruv001 systemd[1]: Starting PostgreSQL database server...
+Jul 12 10:11:36 archdhruv001 postgres[22518]: 2026-07-12 10:11:36.590 IST [22518] LOG:  starting PostgreSQL 18.4 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 16.1.1 20260430, 64-bit
+Jul 12 10:11:36 archdhruv001 postgres[22518]: 2026-07-12 10:11:36.591 IST [22518] LOG:  listening on IPv6 address "::1", port 5432
+Jul 12 10:11:36 archdhruv001 postgres[22518]: 2026-07-12 10:11:36.591 IST [22518] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+Jul 12 10:11:36 archdhruv001 postgres[22518]: 2026-07-12 10:11:36.592 IST [22518] LOG:  listening on Unix socket "/run/postgresql/.s.PGSQL.5432"
+Jul 12 10:11:36 archdhruv001 postgres[22526]: 2026-07-12 10:11:36.598 IST [22526] LOG:  database system was shut down at 2026-07-12 10:11:29 IST
+Jul 12 10:11:36 archdhruv001 postgres[22518]: 2026-07-12 10:11:36.603 IST [22518] LOG:  database system is ready to accept connections
+Jul 12 10:11:36 archdhruv001 systemd[1]: Started PostgreSQL database server.

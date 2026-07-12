@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const bookingController_1 = require("../controllers/bookingController");
+const auth_middleware_1 = require("../middleware/auth.middleware");
+const role_middleware_1 = require("../middleware/role.middleware");
+const router = (0, express_1.Router)();
+router.get('/', bookingController_1.list);
+router.post('/', auth_middleware_1.authenticate, bookingController_1.create);
+router.patch('/:id/decision', auth_middleware_1.authenticate, (0, role_middleware_1.requireRole)('ADMIN', 'MANAGER'), bookingController_1.decide);
+exports.default = router;

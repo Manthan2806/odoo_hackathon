@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const allocationController_1 = require("../controllers/allocationController");
+const auth_middleware_1 = require("../middleware/auth.middleware");
+const role_middleware_1 = require("../middleware/role.middleware");
+const router = (0, express_1.Router)();
+router.use(auth_middleware_1.authenticate, (0, role_middleware_1.requireRole)('ADMIN', 'MANAGER'));
+router.post('/', allocationController_1.allocate);
+router.post('/:id/transfer', allocationController_1.transfer);
+router.post('/:id/return', allocationController_1.returnAllocation);
+exports.default = router;

@@ -1,0 +1,252 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  STAFF
+}
+
+enum AssetStatus {
+  AVAILABLE
+  ALLOCATED
+  IN_MAINTENANCE
+  BOOKED
+  RETIRED
+}
+
+enum AllocationStatus {
+  ACTIVE
+  TRANSFERRED
+  RETURNED
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum NotificationType {
+  ALLOCATION
+  TRANSFER
+  RETURN
+  MAINTENANCE
+  BOOKING
+  SYSTEM
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  STATUS_CHANGE
+  LOGIN
+}
+
+model Department {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  code      String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employees Employee[]
+
+  @@map("departments")
+}
+
+model Employee {
+  id           String   @id @default(cuid())
+  employeeCode String   @unique
+  name         String
+  email        String   @unique
+  passwordHash String
+  phone        String?
+  designation  String?
+  role         Role     @default(STAFF)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  allocationsReceived Allocation[]   @relation("AllocatedTo")
+  allocationsGranted  Allocation[]   @relation("AllocatedBy")
+  maintenanceReported Maintenance[]  @relation("ReportedBy")
+  bookingsRequested   Booking[]      @relation("BookingRequestedBy")
+  bookingsApproved    Booking[]      @relation("BookingApprovedBy")
+  notifications       Notification[]
+  auditLogs           AuditLog[]     @relation("PerformedBy")
+
+  @@index([departmentId])
+  @@index([role])
+  @@map("employees")
+}
+
+model AssetCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assets Asset[]
+
+  @@map("asset_categories")
+}
+
+model Asset {
+  id             String      @id @default(cuid())
+  assetTag       String      @unique
+  name           String
+  status         AssetStatus @default(AVAILABLE)
+  serialNumber   String?
+  location       String?
+  purchaseDate   DateTime?
+  purchaseCost   Decimal?    @db.Decimal(12, 2)
+  currentValue   Decimal?    @db.Decimal(12, 2)
+  warrantyExpiry DateTime?
+  imageUrl       String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  categoryId String
+  category   AssetCategory @relation(fields: [categoryId], references: [id])
+
+  allocations  Allocation[]
+  maintenances Maintenance[]
+  bookings     Booking[]
+
+  @@index([status])
+  @@index([categoryId])
+  @@map("assets")
+}
+
+model Allocation {
+  id                 String           @id @default(cuid())
+  status             AllocationStatus @default(ACTIVE)
+  allocatedAt        DateTime         @default(now())
+  expectedReturnDate DateTime?
+  returnedAt         DateTime?
+  returnCondition    String?
+  notes              String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  assetId String
+  asset   Asset @relation(fields: [assetId], references: [id])
+
+  employeeId String
+  employee   Employee @relation("AllocatedTo", fields: [employeeId], references: [id])
+
+  allocatedById String
+  allocatedBy   Employee @relation("AllocatedBy", fields: [allocatedById], references: [id])
+
+  previousAllocationId String?     @unique
+  previousAllocation   Allocation? @relation("AllocationChain", fields: [previousAllocationId], references: [id])
+  nextAllocation       Allocation? @relation("AllocationChain")
+
+  @@index([assetId])
+  @@index([employeeId])
+  @@index([status])
+  @@map("allocations")
+}
+
+model Maintenance {
+  id               String             @id @default(cuid())
+  status           MaintenanceStatus  @default(SCHEDULED)
+  issueDescription String
+  scheduledDate    DateTime
+  completedDate    DateTime?
+  cost             Decimal?           @db.Decimal(12, 2)
+  vendor           String?
+  notes            String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  assetId String
+  asset   Asset @relation(fields: [assetId], references: [id])
+
+  reportedById String
+  reportedBy   Employee @relation("ReportedBy", fields: [reportedById], references: [id])
+
+  @@index([assetId])
+  @@index([status])
+  @@map("maintenance_records")
+}
+
+model Booking {
+  id         String        @id @default(cuid())
+  status     BookingStatus @default(PENDING)
+  startDate  DateTime
+  endDate    DateTime
+  purpose    String?
+  approvedAt DateTime?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  assetId String
+  asset   Asset @relation(fields: [assetId], references: [id])
+
+  requestedById String
+  requestedBy   Employee @relation("BookingRequestedBy", fields: [requestedById], references: [id])
+
+  approvedById String?
+  approvedBy   Employee? @relation("BookingApprovedBy", fields: [approvedById], references: [id])
+
+  @@index([assetId])
+  @@index([status])
+  @@map("bookings")
+}
+
+model Notification {
+  id                String           @id @default(cuid())
+  type              NotificationType
+  title             String
+  message           String
+  isRead            Boolean          @default(false)
+  relatedEntityType String?
+  relatedEntityId   String?
+  createdAt         DateTime         @default(now())
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([employeeId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id         String      @id @default(cuid())
+  entityType String
+  entityId   String
+  action     AuditAction
+  changes    Json?
+  ipAddress  String?
+  createdAt  DateTime    @default(now())
+
+  performedById String?
+  performedBy   Employee? @relation("PerformedBy", fields: [performedById], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([performedById])
+  @@map("audit_logs")
+}
