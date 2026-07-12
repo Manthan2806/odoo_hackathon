@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import authRoutes from './routes/auth.routes';
 import { errorHandler } from './middleware/errorHandler';
+import categoryRoutes from './routes/categoryRoutes';
+import assetRoutes from './routes/assetRoutes';
 
 export const app = express();
 
@@ -14,7 +16,8 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/auth', authRoutes);
-
+app.use('/api/categories', categoryRoutes);
+app.use('/api/assets', assetRoutes);
 // Teammate's routes get mounted here as their modules land, e.g.:
 // app.use('/departments', departmentRoutes);
 // app.use('/employees', employeeRoutes);
