@@ -1,13 +1,6 @@
-import express from "express";
+import { app } from './app';
+import { env } from './config/env';
 
-const app = express();
-
-const PORT = process.env.PORT || 5000;
-
-app.get("/", (req, res) => {
-  res.send("AssetFlow Backend is Running 🚀");
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(env.port, () => {
+  console.log(`AssetFlow backend running on http://localhost:${env.port}`);
 });
